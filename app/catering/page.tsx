@@ -1,34 +1,19 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { InitialData } from "@swift-food-services/catering-widget";
 import SiteHeader from "../SiteHeader";
-import CateringWidgetClient from "../CateringWidgetClient";
 import {
   type BookingDetails,
   loadDetails,
   hasValidAddress,
 } from "../lib/bookingStore";
+import { buildSwiftDeepLink } from "../lib/swiftDeepLink";
 
 export default function CateringPage() {
   const router = useRouter();
   const [details, setDetails] = useState<BookingDetails | null>(null);
-
-  // Measure the sticky navbar so the widget can offset its own sticky
-  // elements (session bar, cart) to sit below it instead of underneath.
-  const navRef = useRef<HTMLElement>(null);
-  const [navHeight, setNavHeight] = useState(0);
-  useLayoutEffect(() => {
-    const el = navRef.current;
-    if (!el) return;
-    const measure = () => setNavHeight(el.offsetHeight);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [details]);
 
   useEffect(() => {
     const loaded = loadDetails();
@@ -48,31 +33,25 @@ export default function CateringPage() {
     );
   }
 
-  const initialData: InitialData = {
-    eventName: details.eventName || undefined,
-    eventStartDate: details.eventDate || undefined,
-    eventEndDate: details.eventDate || undefined,
-    eventStartTime: details.startTime || undefined,
-    eventEndTime: details.endTime || undefined,
-    contact: {
-      name: details.name || undefined,
-      phone: details.phone || undefined,
-    },
-    deliveryAddress: hasValidAddress(details)
-      ? {
-          line1: details.line1,
-          city: details.city,
-          postcode: details.postcode,
-          ...(details.lat !== undefined && details.lng !== undefined
-            ? { lat: details.lat, lng: details.lng }
-            : {}),
-        }
-      : undefined,
-  };
+  const address = hasValidAddress(details)
+    ? [details.line1, details.city, details.postcode].filter(Boolean).join(", ")
+    : "";
+
+  const rows: { label: string; value: string }[] = [
+    { label: "Event", value: details.eventName },
+    { label: "Date", value: details.eventDate },
+    { label: "Start time", value: details.startTime },
+    { label: "End time", value: details.endTime },
+    { label: "Address", value: address },
+    { label: "Name", value: details.name },
+    { label: "Phone", value: details.phone },
+    { label: "Email", value: details.email },
+    { label: "Organization", value: details.org },
+  ].filter((row) => row.value);
 
   return (
     <div className="min-h-screen bg-[#f7f7f8]">
-      <SiteHeader headerRef={navRef} />
+      <SiteHeader />
 
       <div className="border-b border-[var(--accent)]/10 bg-[var(--accent-soft)]">
         <div className="flex items-center justify-between gap-4 px-6 py-3">
@@ -133,10 +112,55 @@ export default function CateringPage() {
         </div>
       </div>
 
-      <CateringWidgetClient
-        initialData={initialData}
-        stickyTopOffset={navHeight}
-      />
+      <main className="mx-auto max-w-2xl px-6 py-12 sm:py-16">
+        <div className="mb-8">
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
+            <span className="h-px w-6 bg-[var(--accent)]" />
+            Event Space Booking
+          </span>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
+            Review your details
+          </h1>
+          <p className="mt-3 text-base text-black/60">
+            You&apos;ll continue on Swift to build your catering order for
+            this event.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+          <dl className="space-y-4">
+            {rows.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-baseline justify-between gap-4 border-b border-black/5 pb-4 last:border-none last:pb-0"
+              >
+                <dt className="text-sm text-black/50">{row.label}</dt>
+                <dd className="text-right text-sm font-medium text-[var(--foreground)]">
+                  {row.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-8 flex items-center justify-between gap-4">
+            <Link
+              href="/form"
+              className="text-sm font-medium text-[var(--accent)]/80 transition-colors hover:text-[var(--accent)]"
+            >
+              Edit details
+            </Link>
+            <button
+              type="button"
+              onClick={() =>
+                window.open(buildSwiftDeepLink(details), "_blank", "noopener")
+              }
+              className="rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
+            >
+              Continue on Swift
+            </button>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

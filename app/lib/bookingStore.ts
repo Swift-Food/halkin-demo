@@ -5,6 +5,8 @@
 export type BookingDetails = {
   name: string;
   phone: string;
+  email: string;
+  org: string;
   eventName: string;
   eventDate: string; // YYYY-MM-DD
   startTime: string; // HH:MM
@@ -19,6 +21,8 @@ export type BookingDetails = {
 export const EMPTY_DETAILS: BookingDetails = {
   name: "",
   phone: "",
+  email: "",
+  org: "",
   eventName: "",
   eventDate: "",
   startTime: "",

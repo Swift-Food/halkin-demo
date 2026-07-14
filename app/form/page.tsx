@@ -112,6 +112,24 @@ export default function FormPage() {
                     className={inputClass}
                   />
                 </Field>
+                <Field label="Email (optional)">
+                  <input
+                    type="email"
+                    value={details.email}
+                    onChange={set("email")}
+                    placeholder="jane@example.com"
+                    className={inputClass}
+                  />
+                </Field>
+                <Field label="Organization (optional)">
+                  <input
+                    type="text"
+                    value={details.org}
+                    onChange={set("org")}
+                    placeholder="Acme Ltd"
+                    className={inputClass}
+                  />
+                </Field>
               </div>
             </fieldset>
 
