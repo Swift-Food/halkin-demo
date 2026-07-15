@@ -12,6 +12,7 @@ import {
   saveDetails,
   hasValidAddress,
 } from "../lib/bookingStore";
+import { generateSample } from "../lib/sampleDetails";
 
 export default function FormPage() {
   const router = useRouter();
@@ -53,6 +54,11 @@ export default function FormPage() {
     }));
   };
 
+  const handleAutofill = () => {
+    setAddressError(null);
+    setDetails(generateSample());
+  };
+
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validAddress) {
@@ -73,9 +79,18 @@ export default function FormPage() {
             <span className="h-px w-6 bg-[var(--accent)]" />
             Event Space Booking
           </span>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
-            Let&apos;s plan your event
-          </h1>
+          <div className="mt-3 flex items-start justify-between gap-4">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--foreground)] sm:text-4xl">
+              Let&apos;s plan your event
+            </h1>
+            <button
+              type="button"
+              onClick={handleAutofill}
+              className="mt-1 flex-shrink-0 rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-medium text-[var(--foreground)] transition-colors hover:border-black/40 hover:bg-black/[0.02]"
+            >
+              Auto-fill
+            </button>
+          </div>
           <p className="mt-3 text-base text-black/60">
             Share a few details and we&apos;ll tailor the right space and
             catering for your occasion.
